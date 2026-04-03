@@ -1,7 +1,8 @@
 package co.practice.roth.springjwtpractice01.config;
 
+import co.practice.roth.springjwtpractice01.jwt.JwtAuthFilter;
+import co.practice.roth.springjwtpractice01.jwt.JwtAuthEntryPoint;
 import co.practice.roth.springjwtpractice01.service.AppUserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.service.SecurityService;
 import org.springframework.context.annotation.Bean;
@@ -24,9 +25,11 @@ public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
     private final AppUserService appUserService;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, SecurityService securityService) {
+    public SecurityFilterChain filterChain(HttpSecurity http) {
 
         // overwrite security filter chain (default form)
         http.cors(Customizer.withDefaults())
@@ -43,11 +46,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore((servletRequest, servletResponse, filterChain) -> {
-                            HttpServletRequest request = (HttpServletRequest) servletRequest;
-                            System.out.println("Authorization");
-                        },
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntryPoint));
+
 
 
         return http.build();
