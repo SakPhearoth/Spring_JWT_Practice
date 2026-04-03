@@ -32,5 +32,18 @@ public interface AppUserRepository {
             """)
     List<String> getAllRolesByUserId(Integer userId);
 
+    @Insert("""
+                INSERT INTO app_users (full_name, email, password)
+                VALUES (#{fullName}, #{email}, #{password})
+            """)
+    @Options(useGeneratedKeys = true, keyProperty = "userId")
+    void insertUser(AppUser appUser);
+
+    @Insert("""
+                INSERT INTO user_role (user_id, role_id)
+                VALUES (#{userId}, #{roleId})
+            """)
+    void insertUserRole(Integer userId, Integer roleId);
+
 
 }
